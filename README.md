@@ -63,3 +63,5 @@ If you skip `migrate --seed`, the app will return 500 (missing database tables).
 - **Events / Listeners**: User registration (welcome email), Course completed (certificate + completion email)
 - **Policies**: Course, Lesson, Enrollment
 - **Docs**: `docs/ARCHITECTURE.md`, `docs/PRODUCT_THINKING.md`, `docs/ERD.md`
+<img width="684" height="417" alt="image" src="https://github.com/user-attachments/assets/082a7335-9fcb-4685-93f2-c08bab172944" />
+
