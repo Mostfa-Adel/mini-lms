@@ -26,6 +26,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
+# So PHP-FPM workers see APP_KEY and other env vars from the container (fixes MissingAppKeyException)
+COPY docker/php-fpm/zz-docker-env.conf /usr/local/etc/php-fpm.d/zz-docker-env.conf
+
 # Entrypoint installs deps on startup (with volume mount) then runs CMD
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/queue-entrypoint.sh /usr/local/bin/queue-entrypoint.sh

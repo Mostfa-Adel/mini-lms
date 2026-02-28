@@ -14,6 +14,11 @@ if [ -f composer.json ]; then
   composer install
 fi
 
+# Generate Laravel APP_KEY only when empty (e.g. after cp .env.example .env)
+if [ -f artisan ] && [ -z "${APP_KEY}" ]; then
+  php artisan key:generate --force
+fi
+
 # Run migrations so cache table exists before queue worker starts (retry until DB is ready)
 if [ -f artisan ]; then
   for i in 1 2 3 4 5 6 7 8 9 10; do
