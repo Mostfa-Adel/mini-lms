@@ -25,6 +25,7 @@ services:
       QUEUE_CONNECTION: redis
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      APP_KEY: base64:QIuAljkZHnfzeMvY/ImQrzd6XCGC9Xh0AU6m8FTrV7Q=
     env_file:
       - .env
     volumes:
@@ -100,6 +101,7 @@ services:
       QUEUE_CONNECTION: redis
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      APP_KEY: base64:QIuAljkZHnfzeMvY/ImQrzd6XCGC9Xh0AU6m8FTrV7Q=
     volumes:
       - .:/var/www
     networks:
