@@ -1,0 +1,118 @@
+# Development stack: app, web, db, queue, vite (HMR)
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mini-lms-app
+    restart: unless-stopped
+    working_dir: /var/www
+    user: "${HOST_UID:-1001}:${HOST_GID:-1001}"
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    command: ["php-fpm"]
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      TMPDIR: /var/www/storage/framework
+      NPM_CONFIG_CACHE: /var/www/storage/framework/npm-cache
+      COMPOSER_HOME: /var/www/.composer-cache
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: mini_lms
+      DB_USERNAME: mini_lms
+      DB_PASSWORD: secret
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www
+      - composer_cache:/var/www/.composer-cache
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - mini-lms
+    depends_on:
+      - db
+      - redis
+
+  web:
+    image: nginx:alpine
+    container_name: mini-lms-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - mini-lms
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: mini-lms-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mini_lms
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_USER: mini_lms
+      MYSQL_PASSWORD: secret
+    ports:
+      - "33066:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - mini-lms
+
+  redis:
+    image: redis:7-alpine
+    container_name: mini-lms-redis
+    restart: unless-stopped
+    # Not exposing 6379 to host (app/queue use internal network). If you need host access, use e.g. "6380:6379"
+    networks:
+      - mini-lms
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mini-lms-queue
+    restart: unless-stopped
+    working_dir: /var/www
+    user: "${HOST_UID:-1001}:${HOST_GID:-1001}"
+    entrypoint: ["/usr/local/bin/queue-entrypoint.sh"]
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file:
+      - .env
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      TMPDIR: /var/www/storage/framework
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: mini_lms
+      DB_USERNAME: mini_lms
+      DB_PASSWORD: secret
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    volumes:
+      - .:/var/www
+    networks:
+      - mini-lms
+    depends_on:
+      - app
+      - db
+      - redis
+
+networks:
+  mini-lms:
+    driver: bridge
+
+volumes:
+  dbdata:
+  composer_cache:
