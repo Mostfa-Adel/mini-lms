@@ -4,6 +4,7 @@ pipeline{
 			image 'laravel-jenkins-agent'
         	}
     	}
+
 	stages {
 		stage('compose install'){
 			steps{
