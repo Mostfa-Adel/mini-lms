@@ -17,11 +17,14 @@ return new class extends Migration
         });
 
         // Backfill: set completed_at from certificate issued_at where a certificate exists
-        DB::statement('
-            UPDATE enrollments e
-            INNER JOIN certificates c ON e.user_id = c.user_id AND e.course_id = c.course_id
-            SET e.completed_at = c.issued_at
-        ');
+        DB::table('certificates')->select('user_id', 'course_id', 'issued_at')
+            ->orderBy('id')
+            ->each(function ($certificate) {
+                DB::table('enrollments')
+                    ->where('user_id', $certificate->user_id)
+                    ->where('course_id', $certificate->course_id)
+                    ->update(['completed_at' => $certificate->issued_at]);
+            });
     }
 
     /**
