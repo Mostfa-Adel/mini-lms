@@ -1,7 +1,8 @@
 pipeline{
 	agent {
-        	docker {
-			image 'laravel-jenkins-agent'
+        	dockerfile {
+			filename 'Dockerfile'
+			dir '.'
         	}
     	}
 
